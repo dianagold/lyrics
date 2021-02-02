@@ -5,6 +5,9 @@
 * This do-file calculates population-weighted OoS rates for Primary
 *==============================================================================*
 
+whereis github
+global clone "`r(github)'/lyrics"
+
 cap which wbopendata
 if _rc == 111 ssc install wbopendata
 
@@ -29,6 +32,8 @@ drop if region == "NA" | missing(region)
 
 * Calculate population-weighted OoS
 tabstat oos_prim [aw = population_0509], by(regionname)
+
+save "${clone}/outputs/oos.dta", replace
 
 
 /*-----------------------------------------------------------------------------*
