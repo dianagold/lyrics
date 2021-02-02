@@ -8,33 +8,44 @@
 whereis github
 global clone "`r(github)'/lyrics"
 
-cap which wbopendata
-if _rc == 111 ssc install wbopendata
+cap confirm file "${clone}/outputs/oos.csv"
+if _rc {
 
-* Get data using WBG API
-wbopendata, indicator(SP.POP.0509.FE; SP.POP.0509.MA; UIS.ROFST.1) ///
-            year(2000) long nometadata clear
-* SP.POP.0509.FE = Female population between the ages 5 to 9.
-* SP.POP.0509.MA = Male population between the ages 5 to 9.
-* UIS.ROFST.1 = Rate of out-of-school children of primary school age, both sexes (%)
+  cap which wbopendata
+  if _rc == 111 ssc install wbopendata
 
-* Sum genders
-gen population_0509 = sp_pop_0509_fe + sp_pop_0509_ma
+  * Get data using WBG API
+  wbopendata, indicator(SP.POP.0509.FE; SP.POP.0509.MA; UIS.ROFST.1) ///
+              year(2000) long nometadata clear
+  * SP.POP.0509.FE = Female population between the ages 5 to 9.
+  * SP.POP.0509.MA = Male population between the ages 5 to 9.
+  * UIS.ROFST.1 = Rate of out-of-school children of primary school age, both sexes (%)
 
-* More intuitive variable name
-rename uis_rofst_1 oos_prim
+  * Sum genders
+  gen population_0509 = sp_pop_0509_fe + sp_pop_0509_ma
 
-* Keep only the relevant variables
-keep country* region* year population* oos*
+  * More intuitive variable name
+  rename uis_rofst_1 oos_prim
 
-* Drop aggregates
-drop if region == "NA" | missing(region)
+  * Keep only the relevant variables
+  keep country* region* year population* oos*
+
+  * Drop aggregates
+  drop if region == "NA" | missing(region)
+  
+  export delimited "${clone}/outputs/oos.csv", replace
+  
+  disp "created csv"
+}
+
+else {
+  import delimited "${clone}/outputs/oos.csv", varnames(1) clear
+  disp "imported csv"
+
+}
 
 * Calculate population-weighted OoS
 tabstat oos_prim [aw = population_0509], by(regionname)
-
-save "${clone}/outputs/oos.dta", replace
-
 
 /*-----------------------------------------------------------------------------*
 Questions for discussion:
