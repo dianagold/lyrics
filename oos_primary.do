@@ -5,6 +5,9 @@
 * This do-file calculates population-weighted OoS rates for Primary
 *==============================================================================*
 
+cap which wbopendata
+if _rc == 111 ssc install wbopendata
+
 * Get data using WBG API
 wbopendata, indicator(SP.POP.0509.FE; SP.POP.0509.MA; UIS.ROFST.1) ///
             year(2000) long nometadata clear
